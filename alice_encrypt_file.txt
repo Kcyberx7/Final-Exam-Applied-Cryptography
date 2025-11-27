@@ -1,0 +1,33 @@
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP, AES
+from Crypto.Random import get_random_bytes
+
+# Load Bob's public key
+bob_public_key = RSA.import_key(open("public.pem").read())
+cipher_rsa = PKCS1_OAEP.new(bob_public_key)
+
+# Read plaintext file
+with open("alice_message.txt", "rb") as f:
+    data = f.read()
+
+# AES encryption
+aes_key = get_random_bytes(32)  # AES-256 key
+aes_iv = get_random_bytes(16)   # Initialization Vector
+cipher_aes = AES.new(aes_key, AES.MODE_CBC, iv=aes_iv)
+
+# Pad data to multiple of 16 bytes
+pad_len = 16 - len(data) % 16
+data_padded = data + bytes([pad_len] * pad_len)
+
+ciphertext = cipher_aes.encrypt(data_padded)
+
+# Save encrypted file (prepend IV for decryption)
+with open("encrypted_file.bin", "wb") as f:
+    f.write(aes_iv + ciphertext)
+
+# Encrypt AES key with Bob's RSA public key
+enc_aes_key = cipher_rsa.encrypt(aes_key)
+with open("aes_key_encrypted.bin", "wb") as f:
+    f.write(enc_aes_key)
+
+print("File encrypted: encrypted_file.bin & aes_key_encrypted.bin")
