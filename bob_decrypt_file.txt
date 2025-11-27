@@ -1,0 +1,42 @@
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP, AES
+import hashlib
+
+# Load Bob's private key
+private_key = RSA.import_key(open("private.pem").read())
+cipher_rsa = PKCS1_OAEP.new(private_key)
+
+# Decrypt AES key
+with open("aes_key_encrypted.bin", "rb") as f:
+    enc_aes_key = f.read()
+aes_key = cipher_rsa.decrypt(enc_aes_key)
+
+# Read encrypted file and extract IV
+with open("encrypted_file.bin", "rb") as f:
+    aes_iv = f.read(16)
+    ciphertext = f.read()
+
+cipher_aes = AES.new(aes_key, AES.MODE_CBC, iv=aes_iv)
+decrypted_padded = cipher_aes.decrypt(ciphertext)
+
+# Remove padding
+pad_len = decrypted_padded[-1]
+decrypted = decrypted_padded[:-pad_len]
+
+# Save decrypted message
+with open("decrypted_message.txt", "wb") as f:
+    f.write(decrypted)
+
+print("File decrypted: decrypted_message.txt")
+
+# Verify integrity with SHA-256
+with open("alice_message.txt", "rb") as f:
+    original_hash = hashlib.sha256(f.read()).hexdigest()
+
+with open("decrypted_message.txt", "rb") as f:
+    decrypted_hash = hashlib.sha256(f.read()).hexdigest()
+
+if original_hash == decrypted_hash:
+    print("Integrity check PASSED. SHA-256 matches.")
+else:
+    print("Integrity check FAILED!")
