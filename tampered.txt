@@ -1,0 +1,2 @@
+This is a secure message for hashing integrity check.
+Tampering added!

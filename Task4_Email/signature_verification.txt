@@ -1,0 +1,18 @@
+The purpose of a digital signature created using GnuPG is twofold: Authentication and Integrity.
+
+1. Authentication (Validating the Sender):
+The signature proves that the message originated from the holder of the corresponding private key. Since only Alice (alice@example.com) should possess the private key for the ID AD84A65CF39254F7D9FD3AB2D23FD503007219FA, verifying the signature authenticates her as the sender.
+
+2. Integrity (Ensuring Message Content is Unchanged):
+GnuPG uses cryptographic hashing to ensure the message content has not been altered since it was signed.
+
+Verification Confirmation:
+When decrypting the message, GnuPG automatically checks the signature against Alice's public key, resulting in the following success message:
+
+------------------------------------------------------
+gpg: Signature made 11/27/25 23:01:02 Georgian Standard Time
+gpg:             using RSA key AD84A65CF39254F7D9FD3AB2D23FD503007219FA
+gpg: Good signature from "Alice <alice@example.com>" [ultimate]
+------------------------------------------------------
+
+The "Good signature" status confirms that the message's cryptographic hash matches the signed hash, proving both the sender's identity (Alice) and that the message content is intact.
