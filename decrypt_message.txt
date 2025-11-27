@@ -1,0 +1,26 @@
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP, AES
+
+# Load private RSA key
+private_key = RSA.import_key(open("private_rsa.pem").read())
+cipher_rsa = PKCS1_OAEP.new(private_key)
+
+# Decrypt AES key
+with open("aes_key_encrypted.bin", "rb") as f:
+    enc_aes_key = f.read()
+aes_key = cipher_rsa.decrypt(enc_aes_key)
+
+# Decrypt message
+with open("encrypted_message.bin", "rb") as f:
+    nonce = f.read(16)
+    tag = f.read(16)
+    ciphertext = f.read()
+
+cipher_aes = AES.new(aes_key, AES.MODE_EAX, nonce=nonce)
+decrypted_message = cipher_aes.decrypt_and_verify(ciphertext, tag)
+
+# Save decrypted message
+with open("decrypted_message.txt", "wb") as f:
+    f.write(decrypted_message)
+
+print("Decrypted message:", decrypted_message.decode())
